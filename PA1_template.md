@@ -1,16 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
-```{r}
 
-
+```r
 library (lubridate)
 
 data <-read.csv("activity.csv",head=TRUE)
@@ -19,7 +13,8 @@ data$date <- ymd(data$date)
 
 
 ## What is mean total number of steps taken per day?
-```{r}
+
+```r
 library (dplyr,warn.conflicts=FALSE)
 
 sdata <- data %>% 
@@ -32,20 +27,25 @@ hist(sdata$sum,
      main="Histogram of total steps on a day",
      xlab="Steps taken on a day",
      col="RED")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
+```r
 mean_steps   <- mean(sdata$sum,na.rm=TRUE)
 median_steps <- median(sdata$sum,na.rm=TRUE)
 ```
 
-Mean steps per day   : `r as.integer(mean_steps)`
+Mean steps per day   : 9354
 
-Median steps per day : `r as.integer(median_steps)`
+Median steps per day : 10395
 
 
 
 ## What is the average daily activity pattern?
 
-```{r}
+
+```r
 library(ggplot2)
 
 sdata <- data %>% 
@@ -59,27 +59,31 @@ qplot(interval,
       data=sdata, 
       geom="line", 
       main="Mean steps per interval")
-
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
-```{r}
+
+
+```r
 int <- sdata  %>% 
     filter (mean==max(mean)) %>% 
     select(interval)
 ```
 
-Interval with the maximum number of steps is : `r int[1]`
+Interval with the maximum number of steps is : 835
 
 ## Imputing missing values
 
-```{r}
+
+```r
 na_count <- sum(is.na(data$steps))
 ```
 
-Total number of missing values : `r na_count`
+Total number of missing values : 2304
 
-```{r}
+
+```r
 ## replacing missing values with mean values of the intervals.
 ndata <- data
 
@@ -94,7 +98,13 @@ replacement <- ndata %>%
     filter (is.na(steps)) %>% 
     inner_join(.,sdata) %>% 
     select(mean)
+```
 
+```
+## Joining by: "interval"
+```
+
+```r
 ndata$steps <- as.numeric(ndata$steps)
 ndata$steps[is.na(ndata$steps)] <- as.numeric(replacement$mean)
 
@@ -108,14 +118,18 @@ hist(sdata$sum,
      main="Histogram of total steps on a day",
      xlab="Steps taken on a day",
      col="RED")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+
+```r
 mean_steps   <- mean(sdata$sum)
 median_steps <- median(sdata$sum)
 ```
 
-Mean steps per day   : `r as.integer(mean_steps)`
+Mean steps per day   : 10766
 
-Median steps per day : `r as.integer(median_steps)`
+Median steps per day : 10766
 
 **Compared to the raw data, the modified data has a larger mean.**
 
@@ -124,7 +138,8 @@ Median steps per day : `r as.integer(median_steps)`
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+
+```r
 ndata <- data
 
 sdata <- data %>% 
@@ -138,7 +153,13 @@ replacement <- ndata %>%
     filter (is.na(steps)) %>% 
     inner_join(.,sdata) %>% 
     select(mean)
+```
 
+```
+## Joining by: "interval"
+```
+
+```r
 ndata$steps <- as.numeric(ndata$steps)
 ndata$steps[is.na(ndata$steps)] <- as.numeric(replacement$mean)
 
@@ -150,6 +171,18 @@ colnames(dtype) <- c("day","dtype")
 
 ndata$day   <-weekdays(ndata$date)
 wdata       <-inner_join(ndata,dtype)
+```
+
+```
+## Joining by: "day"
+```
+
+```
+## Warning in inner_join_impl(x, y, by$x, by$y): joining character vector and
+## factor, coercing into character vector
+```
+
+```r
 wdata$dtype <-as.factor(wdata$dtype)
 
 fdata <- wdata %>% 
@@ -163,5 +196,6 @@ qplot(interval,
       facets=dtype~., 
       geom="line",
       color=dtype)
-    
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
